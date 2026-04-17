@@ -151,7 +151,7 @@ export default function InfoScreen() {
               value={`${addr.street}\n${addr.city}, ${addr.state} ${addr.zip}`}
               onPress={() =>
                 Linking.openURL(
-                  `https://maps.apple.com/?q=${encodeURIComponent(
+                  `https://maps.google.com/?q=${encodeURIComponent(
                     `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`,
                   )}`,
                 )
