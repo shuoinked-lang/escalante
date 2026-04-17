@@ -10,6 +10,10 @@ export type Reservation = {
   doorCode: string;
 };
 
+// All seven yurts now have keypad locks. In production, ResNexus emails
+// the door code to the guest on booking — by convention the last four
+// digits of their phone number. The value below is fixed sample data so
+// we can demo the keypad flow without touching ResNexus.
 export const DEMO_RESERVATION: Reservation = {
   confirmationCode: 'EY-39271',
   guestFirstName: 'Maya',

@@ -65,7 +65,7 @@ export const YURTS: Yurt[] = [
     kitchen: 'kitchenette',
     bathroom: 'Full private bathroom',
     amenities: [...smallAmenities],
-    hasKeypad: false,
+    hasKeypad: true,
     walkingDirections:
       'From the main parking lot, take the walkway left toward the orchard. Willow sits on the far side under a cluster of cottonwoods.',
     url: 'https://escalanteyurts.com/willow/',
@@ -81,7 +81,7 @@ export const YURTS: Yurt[] = [
     bathroom: 'ADA-accessible private bathroom',
     amenities: [...smallAmenities, 'ADA accessible'],
     ada: true,
-    hasKeypad: false,
+    hasKeypad: true,
     walkingDirections:
       'Ash is our ADA-accessible yurt. From the accessible parking spot at the south end of the lot, a paved walkway leads directly to the door — no stairs.',
     url: 'https://escalanteyurts.com/ash/',
@@ -96,7 +96,7 @@ export const YURTS: Yurt[] = [
     kitchen: 'kitchenette',
     bathroom: 'Private bathroom with shower',
     amenities: [...smallAmenities],
-    hasKeypad: false,
+    hasKeypad: true,
     walkingDirections:
       'From the main parking lot, follow the path past the fire pit circle. Birch is the first yurt on your right.',
     url: 'https://escalanteyurts.com/birch/',
@@ -111,7 +111,7 @@ export const YURTS: Yurt[] = [
     kitchen: 'kitchenette',
     bathroom: 'Private bathroom with shower',
     amenities: [...smallAmenities],
-    hasKeypad: false,
+    hasKeypad: true,
     walkingDirections:
       'From the main parking lot, take the walkway right past the central fire pit. Elm is just before the large yurts.',
     url: 'https://escalanteyurts.com/elm/',
