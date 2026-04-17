@@ -18,9 +18,9 @@ export const PROPERTY = {
   quietHours: { start: '10:00 PM', end: '8:00 AM' },
   wifi: {
     available: true,
-    network: 'TBD',
-    password: 'TBD',
-    note: 'WiFi is complimentary for registered guests. Signal strength can vary — Escalante is a somewhat remote location.',
+    network: 'EscalanteYurts-Guest',
+    password: 'RedRock2024',
+    note: 'Complimentary for registered guests. Signal strength can vary — Escalante is a somewhat remote location.',
   },
 } as const;
 
