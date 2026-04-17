@@ -1,19 +1,32 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+export const Colors = {
+  sand: {
+    50: '#fbf5e9',
+    100: '#f5ead4',
+    200: '#ecd9b2',
+    300: '#dcc08a',
+  },
+  sandstone: {
+    400: '#c9a06a',
+    500: '#a87a48',
+    600: '#8a5f32',
+  },
+  terracotta: {
+    400: '#c5553a',
+    500: '#b33e23',
+    600: '#8a3a22',
+  },
+  sage: {
+    300: '#b4bfa5',
+    400: '#8a9a7a',
+    500: '#6e8060',
+    600: '#5c6b52',
+  },
+  earth: {
+    500: '#6b4e2e',
+    600: '#4d371f',
+    700: '#3a2a18',
+  },
+  ink: '#2a1f17',
+} as const;
 
-export default {
-  light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
-  },
-};
+export default Colors;

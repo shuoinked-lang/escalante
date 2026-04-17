@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "escalante-yurts",
+    "name": "Escalante Yurts",
     "slug": "escalante-yurts",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "escalanteyurts",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#fbf5e9"
     },
     "ios": {
       "supportsTablet": true
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#fbf5e9"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
