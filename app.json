@@ -14,9 +14,11 @@
       "backgroundColor": "#fbf5e9"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.escalanteyurts.app"
     },
     "android": {
+      "package": "com.escalanteyurts.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#fbf5e9"
