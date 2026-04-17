@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -310,13 +310,21 @@ export default function MapScreen() {
 
   const selectActivity = (a: Activity) => {
     setSelected(a);
+    mapRef.current?.fitToCoordinates([PROPERTY_COORDS, a.coords], {
+      edgePadding: { top: 140, right: 60, bottom: CARD_HEIGHT + 40, left: 60 },
+      animated: true,
+    });
+  };
+
+  const recenter = () => {
+    setSelected(null);
     mapRef.current?.animateToRegion(
       {
-        ...a.coords,
-        latitudeDelta: 0.25,
-        longitudeDelta: 0.25,
+        ...PROPERTY_COORDS,
+        latitudeDelta: 1.4,
+        longitudeDelta: 1.4,
       },
-      400,
+      500,
     );
   };
 
@@ -333,7 +341,19 @@ export default function MapScreen() {
         showsCompass={false}
         showsUserLocation
         onPress={() => setSelected(null)}>
-        <Marker coordinate={PROPERTY_COORDS} title="Escalante Yurts" anchor={{ x: 0.5, y: 1 }}>
+        {selected && (
+          <Polyline
+            coordinates={[PROPERTY_COORDS, selected.coords]}
+            strokeColor={Colors.terracotta[500]}
+            strokeWidth={2.5}
+            lineDashPattern={[6, 6]}
+          />
+        )}
+        <Marker
+          coordinate={PROPERTY_COORDS}
+          title="Escalante Yurts"
+          anchor={{ x: 0.5, y: 1 }}
+          tracksViewChanges={false}>
           <PropertyPin />
         </Marker>
         {visible.map((a) => (
@@ -342,6 +362,7 @@ export default function MapScreen() {
             coordinate={a.coords}
             title={a.name}
             anchor={{ x: 0.5, y: 1 }}
+            tracksViewChanges={false}
             onPress={(e) => {
               e.stopPropagation();
               selectActivity(a);
@@ -390,6 +411,13 @@ export default function MapScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
+
+      <Pressable
+        onPress={recenter}
+        style={[styles.recenterBtn, { bottom: selected ? CARD_HEIGHT + 16 : 32 }]}
+        className="h-12 w-12 items-center justify-center rounded-full bg-sand-50 active:opacity-70">
+        <Feather name="home" size={18} color={Colors.terracotta[500]} />
+      </Pressable>
 
       <DetailCard activity={selected} onClose={() => setSelected(null)} />
     </View>
@@ -460,5 +488,14 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: -4 },
     elevation: 20,
+  },
+  recenterBtn: {
+    position: 'absolute',
+    right: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 6,
   },
 });
