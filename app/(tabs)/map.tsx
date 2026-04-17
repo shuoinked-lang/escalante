@@ -11,7 +11,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,6 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { Colors } from '@/constants/Colors';
 import {
@@ -35,56 +35,158 @@ type CategoryStyle = {
   color: string;
   bg: string;
   icon: React.ComponentProps<typeof Feather>['name'];
+  glyph: string;
 };
 
 const CATEGORY_STYLES: Record<ActivityCategory, CategoryStyle> = {
-  hike: { color: Colors.sage[600], bg: Colors.sage[400], icon: 'trending-up' },
+  hike: { color: Colors.sage[600], bg: Colors.sage[500], icon: 'trending-up', glyph: '▲' },
   'scenic-drive': {
     color: Colors.sandstone[600],
-    bg: Colors.sandstone[400],
+    bg: Colors.sandstone[500],
     icon: 'navigation',
+    glyph: '◆',
   },
   'slot-canyon': {
     color: Colors.terracotta[600],
     bg: Colors.terracotta[500],
     icon: 'layers',
+    glyph: '◇',
   },
   'national-park': {
     color: Colors.earth[700],
     bg: Colors.earth[500],
     icon: 'award',
+    glyph: '★',
   },
   'kid-friendly': {
     color: '#b86a3a',
     bg: '#d68a5c',
     icon: 'smile',
+    glyph: '♥',
   },
 };
 
 const CARD_HEIGHT = Math.min(Dimensions.get('window').height * 0.55, 520);
 
-function PinBadge({ category }: { category: ActivityCategory }) {
-  const s = CATEGORY_STYLES[category];
-  return (
-    <View style={styles.pinWrap}>
-      <View style={[styles.pinDot, { backgroundColor: s.bg }]}>
-        <Feather name={s.icon} size={14} color="white" />
-      </View>
-      <View style={[styles.pinTail, { borderTopColor: s.bg }]} />
-    </View>
-  );
+function buildMapHtml() {
+  const markersPayload = ACTIVITIES.map((a) => ({
+    id: a.id,
+    lat: a.coords.latitude,
+    lng: a.coords.longitude,
+    name: a.name,
+    color: CATEGORY_STYLES[a.primaryCategory].bg,
+    glyph: CATEGORY_STYLES[a.primaryCategory].glyph,
+    categories: a.categories,
+  }));
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  html, body, #map { margin: 0; padding: 0; height: 100%; width: 100%; }
+  body { background: #fbf5e9; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .pin-wrap { background: transparent !important; border: none !important; }
+  .pin {
+    width: 32px; height: 32px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    color: white; font-size: 14px; font-weight: bold;
+  }
+  .pin-home {
+    width: 38px; height: 38px; border-radius: 19px;
+    background: ${Colors.ink};
+    font-size: 18px;
+  }
+  .leaflet-control-attribution { font-size: 9px; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  var PROPERTY = [${PROPERTY_COORDS.latitude}, ${PROPERTY_COORDS.longitude}];
+  var markersData = ${JSON.stringify(markersPayload)};
+
+  var map = L.map('map', {
+    zoomControl: false,
+    attributionControl: true,
+  }).setView(PROPERTY, 9);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap',
+  }).addTo(map);
+
+  var homeIcon = L.divIcon({
+    html: '<div class="pin pin-home">⌂</div>',
+    className: 'pin-wrap',
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+  });
+  L.marker(PROPERTY, { icon: homeIcon }).addTo(map);
+
+  var markers = {};
+  markersData.forEach(function(a) {
+    var icon = L.divIcon({
+      html: '<div class="pin" style="background:' + a.color + '">' + a.glyph + '</div>',
+      className: 'pin-wrap',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+    });
+    var m = L.marker([a.lat, a.lng], { icon: icon }).addTo(map);
+    m.on('click', function() {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'select', id: a.id }));
+    });
+    markers[a.id] = { marker: m, categories: a.categories };
+  });
+
+  map.on('click', function() {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'deselect' }));
+  });
+
+  var routeLine = null;
+  window.showRoute = function(lat, lng) {
+    if (routeLine) { map.removeLayer(routeLine); }
+    routeLine = L.polyline([PROPERTY, [lat, lng]], {
+      color: '${Colors.terracotta[500]}',
+      weight: 3, dashArray: '8,8', opacity: 0.9,
+    }).addTo(map);
+    map.fitBounds(routeLine.getBounds(), {
+      paddingTopLeft: [60, 140],
+      paddingBottomRight: [60, ${Math.round(CARD_HEIGHT) + 40}],
+      animate: true,
+    });
+  };
+
+  window.clearRoute = function() {
+    if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  };
+
+  window.recenter = function() {
+    window.clearRoute();
+    map.setView(PROPERTY, 9, { animate: true });
+  };
+
+  window.applyFilter = function(cats) {
+    markersData.forEach(function(a) {
+      var show = cats.length === 0 || a.categories.some(function(c) { return cats.indexOf(c) !== -1; });
+      var entry = markers[a.id];
+      if (show) { entry.marker.addTo(map); }
+      else { map.removeLayer(entry.marker); }
+    });
+  };
+
+  window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'ready' }));
+</script>
+</body>
+</html>`;
 }
 
-function PropertyPin() {
-  return (
-    <View style={styles.pinWrap}>
-      <View style={[styles.pinDot, styles.propertyPin]}>
-        <Feather name="home" size={14} color="white" />
-      </View>
-      <View style={[styles.pinTail, { borderTopColor: Colors.ink }]} />
-    </View>
-  );
-}
+const MAP_HTML = buildMapHtml();
 
 function FilterChip({
   label,
@@ -288,15 +390,13 @@ function DetailCard({
 }
 
 export default function MapScreen() {
-  const mapRef = useRef<MapView>(null);
+  const webRef = useRef<WebView>(null);
   const [filters, setFilters] = useState<Set<ActivityCategory>>(new Set());
   const [selected, setSelected] = useState<Activity | null>(null);
 
-  const visible = useMemo(() => {
-    if (filters.size === 0) return ACTIVITIES;
-    return ACTIVITIES.filter((a) =>
-      a.categories.some((c) => filters.has(c)),
-    );
+  const visibleCount = useMemo(() => {
+    if (filters.size === 0) return ACTIVITIES.length;
+    return ACTIVITIES.filter((a) => a.categories.some((c) => filters.has(c))).length;
   }, [filters]);
 
   const toggleFilter = (c: ActivityCategory) => {
@@ -304,77 +404,69 @@ export default function MapScreen() {
       const next = new Set(prev);
       if (next.has(c)) next.delete(c);
       else next.add(c);
+      const arr = JSON.stringify([...next]);
+      webRef.current?.injectJavaScript(`window.applyFilter(${arr}); true;`);
       return next;
     });
   };
 
+  const clearFilters = () => {
+    setFilters(new Set());
+    webRef.current?.injectJavaScript(`window.applyFilter([]); true;`);
+  };
+
   const selectActivity = (a: Activity) => {
     setSelected(a);
-    mapRef.current?.fitToCoordinates([PROPERTY_COORDS, a.coords], {
-      edgePadding: { top: 140, right: 60, bottom: CARD_HEIGHT + 40, left: 60 },
-      animated: true,
-    });
+    webRef.current?.injectJavaScript(
+      `window.showRoute(${a.coords.latitude}, ${a.coords.longitude}); true;`,
+    );
+  };
+
+  const deselect = () => {
+    setSelected(null);
+    webRef.current?.injectJavaScript(`window.clearRoute(); true;`);
   };
 
   const recenter = () => {
     setSelected(null);
-    mapRef.current?.animateToRegion(
-      {
-        ...PROPERTY_COORDS,
-        latitudeDelta: 1.4,
-        longitudeDelta: 1.4,
-      },
-      500,
-    );
+    webRef.current?.injectJavaScript(`window.recenter(); true;`);
+  };
+
+  const onMessage = (e: WebViewMessageEvent) => {
+    try {
+      const msg = JSON.parse(e.nativeEvent.data);
+      if (msg.type === 'select') {
+        const a = ACTIVITIES.find((x) => x.id === msg.id);
+        if (a) selectActivity(a);
+      } else if (msg.type === 'deselect') {
+        if (selected) deselect();
+      }
+    } catch {
+      /* ignore malformed messages */
+    }
   };
 
   return (
     <View className="flex-1 bg-sand-50">
-      <MapView
-        ref={mapRef}
+      <WebView
+        ref={webRef}
+        source={{ html: MAP_HTML }}
         style={StyleSheet.absoluteFill}
-        initialRegion={{
-          ...PROPERTY_COORDS,
-          latitudeDelta: 1.4,
-          longitudeDelta: 1.4,
-        }}
-        showsCompass={false}
-        showsUserLocation
-        onPress={() => setSelected(null)}>
-        {selected && (
-          <Polyline
-            coordinates={[PROPERTY_COORDS, selected.coords]}
-            strokeColor={Colors.terracotta[500]}
-            strokeWidth={2.5}
-            lineDashPattern={[6, 6]}
-          />
-        )}
-        <Marker
-          coordinate={PROPERTY_COORDS}
-          title="Escalante Yurts"
-          anchor={{ x: 0.5, y: 1 }}
-          tracksViewChanges={false}>
-          <PropertyPin />
-        </Marker>
-        {visible.map((a) => (
-          <Marker
-            key={a.id}
-            coordinate={a.coords}
-            title={a.name}
-            anchor={{ x: 0.5, y: 1 }}
-            tracksViewChanges={false}
-            onPress={(e) => {
-              e.stopPropagation();
-              selectActivity(a);
-            }}>
-            <PinBadge category={a.primaryCategory} />
-          </Marker>
-        ))}
-      </MapView>
+        onMessage={onMessage}
+        originWhitelist={['*']}
+        javaScriptEnabled
+        domStorageEnabled
+        scalesPageToFit={false}
+        scrollEnabled={false}
+        bounces={false}
+        androidLayerType="hardware"
+      />
 
       <SafeAreaView edges={['top']} pointerEvents="box-none" style={styles.topOverlay}>
         <View className="px-4 pt-2">
-          <View className="flex-row items-center gap-2 rounded-2xl bg-sand-50/90 px-3 py-2" style={styles.headerShadow}>
+          <View
+            className="flex-row items-center gap-2 rounded-2xl bg-sand-50/95 px-3 py-2"
+            style={styles.headerShadow}>
             <Feather name="map" size={16} color={Colors.terracotta[500]} />
             <Text
               className="flex-1 text-base text-earth-700"
@@ -384,7 +476,7 @@ export default function MapScreen() {
             <Text
               className="text-[10px] uppercase text-earth-600"
               style={{ fontFamily: 'Inter_600SemiBold', letterSpacing: 1.5 }}>
-              {visible.length} places
+              {visibleCount} places
             </Text>
           </View>
         </View>
@@ -406,7 +498,7 @@ export default function MapScreen() {
               label="Clear"
               icon="x"
               active={false}
-              onPress={() => setFilters(new Set())}
+              onPress={clearFilters}
             />
           )}
         </ScrollView>
@@ -419,7 +511,7 @@ export default function MapScreen() {
         <Feather name="home" size={18} color={Colors.terracotta[500]} />
       </Pressable>
 
-      <DetailCard activity={selected} onClose={() => setSelected(null)} />
+      <DetailCard activity={selected} onClose={deselect} />
     </View>
   );
 }
@@ -430,39 +522,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-  },
-  pinWrap: {
-    alignItems: 'center',
-  },
-  pinDot: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'white',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-  pinTail: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 5,
-    borderRightWidth: 5,
-    borderTopWidth: 7,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    marginTop: -1,
-  },
-  propertyPin: {
-    backgroundColor: Colors.ink,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
   },
   headerShadow: {
     shadowColor: '#000',
