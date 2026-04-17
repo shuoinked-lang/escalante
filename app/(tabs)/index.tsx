@@ -2,6 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import { ImageBackground, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BookButton } from '@/components/BookButton';
+import { WifiCard } from '@/components/WifiCard';
 import { Colors } from '@/constants/Colors';
 import { PROPERTY } from '@/data/property';
 
@@ -109,34 +111,24 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <View className="mx-6 mt-4 overflow-hidden rounded-2xl border border-sand-200 bg-white">
-          <View className="flex-row items-center gap-4 px-5 py-4">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-terracotta-500/10">
-              <Feather name="wifi" size={18} color={Colors.terracotta[500]} />
-            </View>
-            <View className="flex-1">
-              <Text
-                className="text-xs uppercase text-earth-600"
-                style={{ fontFamily: 'Inter_600SemiBold', letterSpacing: 1.5 }}>
-                WiFi
-              </Text>
-              <Text
-                className="mt-0.5 text-base text-earth-700"
-                style={{ fontFamily: 'Inter_500Medium' }}>
-                Network · {PROPERTY.wifi.network}
-              </Text>
-              <Text
-                className="text-base text-earth-700"
-                style={{ fontFamily: 'Inter_500Medium' }}>
-                Password · {PROPERTY.wifi.password}
-              </Text>
-              <Text
-                className="mt-1 text-xs leading-4 text-earth-600"
-                style={{ fontFamily: 'Inter_400Regular' }}>
-                {PROPERTY.wifi.note}
-              </Text>
-            </View>
+        <View className="mx-6 mt-4 rounded-2xl border border-sand-200 bg-white p-5">
+          <View className="mb-3 flex-row items-center gap-2">
+            <Feather name="wifi" size={14} color={Colors.terracotta[500]} />
+            <Text
+              className="text-[11px] uppercase text-terracotta-500"
+              style={{ fontFamily: 'Inter_600SemiBold', letterSpacing: 2 }}>
+              WiFi
+            </Text>
           </View>
+          <WifiCard
+            network={PROPERTY.wifi.network}
+            password={PROPERTY.wifi.password}
+            note={PROPERTY.wifi.note}
+          />
+        </View>
+
+        <View className="mx-6 mt-5">
+          <BookButton label="Book Your Next Stay" />
         </View>
 
         <View className="mx-6 mt-8 overflow-hidden rounded-2xl">

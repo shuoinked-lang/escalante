@@ -13,6 +13,8 @@ export const PROPERTY = {
     text: '435-671-2382',
   },
   email: 'info@escalanteyurts.com',
+  bookingUrl:
+    'https://resnexus.com/resnexus/reservations/book/687AE40C-C49E-43B5-8B98-D1E421E6F65B',
   checkIn: '3:00 PM',
   checkOut: '10:00 AM',
   quietHours: { start: '10:00 PM', end: '8:00 AM' },

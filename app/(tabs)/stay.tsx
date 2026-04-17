@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BookButton } from '@/components/BookButton';
+import { WifiCard } from '@/components/WifiCard';
 import { Colors } from '@/constants/Colors';
 import { PROPERTY } from '@/data/property';
 import { DEMO_RESERVATION } from '@/data/reservation';
@@ -342,37 +344,11 @@ export default function StayScreen() {
           </InfoCard>
 
           <InfoCard icon="wifi" label="WiFi" title="Stay connected">
-            <View className="rounded-xl bg-sand-100 p-3">
-              <View className="flex-row items-baseline justify-between">
-                <Text
-                  className="text-[10px] uppercase text-earth-600"
-                  style={{ fontFamily: 'Inter_600SemiBold', letterSpacing: 1.5 }}>
-                  Network
-                </Text>
-                <Text
-                  className="text-base text-earth-700"
-                  style={{ fontFamily: 'Inter_500Medium' }}>
-                  {PROPERTY.wifi.network}
-                </Text>
-              </View>
-              <View className="mt-1 flex-row items-baseline justify-between">
-                <Text
-                  className="text-[10px] uppercase text-earth-600"
-                  style={{ fontFamily: 'Inter_600SemiBold', letterSpacing: 1.5 }}>
-                  Password
-                </Text>
-                <Text
-                  className="text-base text-earth-700"
-                  style={{ fontFamily: 'Inter_500Medium' }}>
-                  {PROPERTY.wifi.password}
-                </Text>
-              </View>
-            </View>
-            <Text
-              className="mt-2 text-xs leading-5 text-earth-600"
-              style={{ fontFamily: 'Inter_400Regular' }}>
-              {PROPERTY.wifi.note}
-            </Text>
+            <WifiCard
+              network={PROPERTY.wifi.network}
+              password={PROPERTY.wifi.password}
+              note={PROPERTY.wifi.note}
+            />
           </InfoCard>
 
           <InfoCard icon="coffee" label="Breakfast" title="Delivered to your yurt">
@@ -409,7 +385,8 @@ export default function StayScreen() {
             ))}
           </InfoCard>
 
-          <View className="mx-4 mt-5">
+          <View className="mx-4 mt-5 gap-3">
+            <BookButton label="Already planning your next trip?" />
             <Pressable
               onPress={reportIssue}
               className="flex-row items-center justify-center rounded-2xl border border-sand-300 bg-white py-4 active:opacity-60">
@@ -421,9 +398,9 @@ export default function StayScreen() {
               </Text>
             </Pressable>
             <Text
-              className="mt-2 text-center text-[10px] text-earth-600"
+              className="text-center text-[10px] text-earth-600"
               style={{ fontFamily: 'Inter_400Regular' }}>
-              Opens your mail app · sent to {PROPERTY.email}
+              Report an issue opens your mail app · sent to {PROPERTY.email}
             </Text>
           </View>
         </SafeAreaView>

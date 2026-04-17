@@ -3,6 +3,8 @@ import * as Linking from 'expo-linking';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BookButton } from '@/components/BookButton';
+import { NewsletterCard } from '@/components/NewsletterCard';
 import { Colors } from '@/constants/Colors';
 import { POLICIES, PROPERTY } from '@/data/property';
 
@@ -158,6 +160,12 @@ export default function InfoScreen() {
               }
             />
           </View>
+        </View>
+
+        <NewsletterCard />
+
+        <View className="mx-4 mt-4">
+          <BookButton label="Book a yurt" />
         </View>
 
         <View className="mt-10 items-center px-6">
